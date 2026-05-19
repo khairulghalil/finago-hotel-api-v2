@@ -68,10 +68,7 @@ DB_SYNCHRONIZE=false
 
 ```bash
 # Development mode
-npm run start
-
-# Watch mode (auto-reload)
-npm run start:dev
+npm run dev
 
 # Production mode
 npm run start:prod
