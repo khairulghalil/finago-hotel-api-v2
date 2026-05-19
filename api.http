@@ -1,0 +1,40 @@
+### API Information
+GET http://localhost:3000/api/v1
+
+### Health Check
+GET http://localhost:3000/api/v1/health
+
+### Get All Hotels
+GET http://localhost:3000/api/v1/hotels
+
+### Get Hotel by ID
+GET http://localhost:3000/api/v1/hotels/{{hotelId}}
+
+### Create Hotel
+POST http://localhost:3000/api/v1/hotels
+Content-Type: application/json
+
+{
+  "name": "Grand Luxury Hotel",
+  "description": "A premium 5-star hotel in the heart of the city",
+  "address": "123 Main Street",
+  "city": "New York",
+  "country": "USA",
+  "phone": "+1234567890",
+  "email": "info@grandluxury.com",
+  "rating": 5,
+  "isActive": true
+}
+
+### Update Hotel
+PATCH http://localhost:3000/api/v1/hotels/{{hotelId}}
+Content-Type: application/json
+
+{
+  "name": "Grand Luxury Hotel & Spa",
+  "rating": 5,
+  "description": "Updated description"
+}
+
+### Delete Hotel (Soft Delete)
+DELETE http://localhost:3000/api/v1/hotels/{{hotelId}}
