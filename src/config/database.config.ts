@@ -11,7 +11,7 @@ export default registerAs(
     password: process.env.DB_PASSWORD || 'password',
     database: process.env.DB_DATABASE || 'finago_hotel',
     entities: [__dirname + '/../**/*.entity{.ts,.js}'],
-    synchronize: process.env.NODE_ENV === 'development',
+    synchronize: process.env.DB_SYNCHRONIZE === 'true',
     logging: process.env.DB_LOGGING === 'true',
     autoLoadEntities: true,
   }),
