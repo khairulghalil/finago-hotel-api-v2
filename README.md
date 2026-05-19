@@ -74,6 +74,13 @@ npm run dev
 npm run start:prod
 ```
 
+## 🏃 Other Useful Commands
+
+```bash
+# To generate entity from DB
+typeorm-model-generator -h localhost -d finago_hotel -u root -x Qaisara@2 -e mysql -o ./src/entities-generated --strictMode !
+```
+
 ## 📡 API Endpoints
 
 ### Hotels

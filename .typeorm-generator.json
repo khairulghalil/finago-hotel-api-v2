@@ -1,0 +1,10 @@
+{
+  "host": "localhost",
+  "port": 3306,
+  "database": "finago_hotel",
+  "user": "root",
+  "password": "Qaisara@2",
+  "engine": "mysql",
+  "output": "./src/entities-generated",
+  "skipTables": []
+}

@@ -1,8 +1,10 @@
 import { Entity, Column } from 'typeorm';
-import { BaseEntity } from '../../../common/entities/base.entity';
 
 @Entity('hotels')
-export class Hotel extends BaseEntity {
+export class Hotel {
+  @Column('varchar', { primary: true, name: 'id', length: 36 })
+  id!: string;
+
   @Column({ type: 'varchar', length: 255 })
   name!: string;
 

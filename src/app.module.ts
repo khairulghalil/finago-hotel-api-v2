@@ -4,6 +4,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { HotelsModule } from './modules/hotels/hotels.module';
+import { RoomModule } from './modules/room/room.module';
 import appConfig from './config/app.config';
 import databaseConfig from './config/database.config';
 
@@ -21,6 +22,7 @@ import databaseConfig from './config/database.config';
       }),
     }),
     HotelsModule,
+    RoomModule,
   ],
   controllers: [AppController],
   providers: [AppService],
