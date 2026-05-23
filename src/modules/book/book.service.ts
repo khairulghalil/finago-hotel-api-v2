@@ -3,7 +3,8 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { BookingTbl, CustomerTbl } from '../../entities';
 import { CreateBookingDto } from './dto/create-booking.dto';
-import { CryptoUtil } from '../../common/utils/crypto.util';
+import { CryptoService } from '../../common/utils/crypto.util';
+import { MESSAGES } from '../../common/constants/messages.constant';
 import moment from 'moment';
 import { customAlphabet } from 'nanoid';
 
@@ -19,6 +20,8 @@ export class BookService {
 
     @InjectRepository(CustomerTbl)
     private readonly customerRepository: Repository<CustomerTbl>,
+
+    private readonly cryptoService: CryptoService,
   ) {}
 
   async getBookedDate(id: string): Promise<string[]> {
@@ -44,44 +47,58 @@ export class BookService {
   }
 
   async createBooking(data: CreateBookingDto) {
-    const custId = nanoid();
-    const customerList = await this.customerRepository.find({
-      select: ['id', 'icNumber'],
-      where: { email: data.email },
-    });
+    return await this.bookingRepository.manager.transaction(
+      async (transactionalEntityManager) => {
+        const custId = nanoid();
+        const customerList = await transactionalEntityManager.find(
+          CustomerTbl,
+          {
+            select: ['id', 'icNumber'],
+            where: { email: data.email },
+          },
+        );
 
-    if (customerList.length === 0) {
-      const encryptedIcNumber = await CryptoUtil.encrypt(data.icNumber);
+        let customerId: string;
 
-      const toSaveCustomer = {
-        id: custId,
-        name: data.name,
-        email: data.email,
-        icNumber: encryptedIcNumber,
-        phone: data.phone,
-      };
-      console.log('New customer with encrypted IC:', toSaveCustomer);
-      // await this.customerRepository.save(toSaveCustomer);
-    } else {
-      const decryptedIcNumber = await CryptoUtil.decrypt(
-        customerList[0].icNumber,
-      );
-      console.log('Data exists. Decrypted IC Number >>', decryptedIcNumber);
-    }
+        if (customerList.length === 0) {
+          const encryptedIcNumber = await this.cryptoService.encrypt(
+            data.icNumber,
+          );
+          const newCustomer = transactionalEntityManager.create(CustomerTbl, {
+            id: custId,
+            name: data.name,
+            email: data.email,
+            icNumber: encryptedIcNumber,
+            phone: data.phone,
+          });
+          await transactionalEntityManager.save(newCustomer);
+          customerId = custId;
+        } else {
+          const decryptedIcNumber = await this.cryptoService.decrypt(
+            customerList[0].icNumber,
+          );
+          console.log('Data exists. Decrypted IC Number >>', decryptedIcNumber);
+          customerId = customerList[0].id;
+        }
 
-    const booking = this.bookingRepository.create({
-      id: nanoid(),
-      roomId: data.id,
-      customerId: customerList.length > 0 ? customerList[0].id : custId,
-      addOns: data.addOns,
-      checkInDate: moment(data.checkInDate, 'DD/MM/YYYY').format('YYYY-MM-DD'),
-      checkOutDate: moment(data.checkOutDate, 'DD/MM/YYYY').format(
-        'YYYY-MM-DD',
-      ),
-      totalPrice: data.totalPrice,
-      isCancelled: 0,
-    });
-    // await this.bookingRepository.save(booking);
-    return { message: 'Booking created successfully' };
+        const booking = transactionalEntityManager.create(BookingTbl, {
+          id: nanoid(),
+          roomId: data.id,
+          customerId: customerId,
+          addOns: data.addOns,
+          checkInDate: moment(data.checkInDate, 'DD/MM/YYYY').format(
+            'YYYY-MM-DD',
+          ),
+          checkOutDate: moment(data.checkOutDate, 'DD/MM/YYYY').format(
+            'YYYY-MM-DD',
+          ),
+          totalPrice: data.totalPrice,
+          isCancelled: 0,
+        });
+        await transactionalEntityManager.save(booking);
+
+        return { message: MESSAGES.BOOKING_CREATED };
+      },
+    );
   }
 }

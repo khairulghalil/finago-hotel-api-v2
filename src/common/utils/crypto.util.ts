@@ -7,20 +7,25 @@ import {
   DecipherGCM,
 } from 'crypto';
 import { promisify } from 'util';
+import { Injectable } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 
 const scryptAsync = promisify(scrypt);
 
-export class CryptoUtil {
-  private static algorithm = 'aes-256-gcm';
-  private static keyLength = 32;
-  private static ivLength = 12; // GCM standard IV length
-  private static saltLength = 16; // Reduced for compact storage
-  private static tagLength = 16;
-  private static tagPosition = this.saltLength + this.ivLength;
-  private static encryptedPosition = this.tagPosition + this.tagLength;
+@Injectable()
+export class CryptoService {
+  private readonly algorithm = 'aes-256-gcm';
+  private readonly keyLength = 32;
+  private readonly ivLength = 12; // GCM standard IV length
+  private readonly saltLength = 16; // Reduced for compact storage
+  private readonly tagLength = 16;
+  private readonly tagPosition = this.saltLength + this.ivLength;
+  private readonly encryptedPosition = this.tagPosition + this.tagLength;
 
-  private static getEncryptionKey(): string {
-    const key = process.env.ENCRYPTION_KEY;
+  constructor(private readonly configService: ConfigService) {}
+
+  private getEncryptionKey(): string {
+    const key = this.configService.get<string>('ENCRYPTION_KEY');
     if (!key) {
       throw new Error(
         'ENCRYPTION_KEY is not set in environment variables. Please add it to your .env file.',
@@ -34,7 +39,7 @@ export class CryptoUtil {
    * @param text - Plain text to encrypt
    * @returns Encrypted string in base64 format (compact for VARCHAR(100))
    */
-  static async encrypt(text: string): Promise<string> {
+  async encrypt(text: string): Promise<string> {
     const password = this.getEncryptionKey();
     const salt = randomBytes(this.saltLength);
     const iv = randomBytes(this.ivLength);
@@ -57,7 +62,7 @@ export class CryptoUtil {
    * @param encryptedBase64 - Encrypted string in base64 format
    * @returns Decrypted plain text
    */
-  static async decrypt(encryptedBase64: string): Promise<string> {
+  async decrypt(encryptedBase64: string): Promise<string> {
     const password = this.getEncryptionKey();
     const data = Buffer.from(encryptedBase64, 'base64');
 
