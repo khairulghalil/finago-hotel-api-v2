@@ -5,6 +5,7 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { HotelsModule } from './modules/hotels/hotels.module';
 import { RoomModule } from './modules/room/room.module';
+import { BookModule } from './modules/book/book.module';
 import appConfig from './config/app.config';
 import databaseConfig from './config/database.config';
 
@@ -23,6 +24,7 @@ import databaseConfig from './config/database.config';
     }),
     HotelsModule,
     RoomModule,
+    BookModule,
   ],
   controllers: [AppController],
   providers: [AppService],

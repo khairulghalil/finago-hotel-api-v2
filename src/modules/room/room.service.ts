@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { RoomCategoryTbl } from '../../entities/room-category';
-import { RoomTypeOption } from './dto/room-type-option.dto';
+import { RoomCategoryTbl } from '../../entities';
+import { RoomTypeOptDto } from './dto/room-type-option.dto';
 
 @Injectable()
 export class RoomService {
@@ -11,7 +11,7 @@ export class RoomService {
     private readonly roomCategoryRepository: Repository<RoomCategoryTbl>,
   ) {}
 
-  async getRoomTypeOptions(): Promise<RoomTypeOption[]> {
+  async getRoomTypeOptions(): Promise<RoomTypeOptDto[]> {
     const roomCategories = await this.roomCategoryRepository.find({
       order: { orderIndex: 'ASC' },
     });

@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { RoomController } from './room.controller';
 import { RoomService } from './room.service';
-import { RoomCategoryTbl } from '../../entities/room-category';
+import { RoomCategoryTbl } from '../../entities';
 
 @Module({
   imports: [TypeOrmModule.forFeature([RoomCategoryTbl])],
