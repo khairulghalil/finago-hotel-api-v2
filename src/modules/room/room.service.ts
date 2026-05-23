@@ -12,34 +12,19 @@ export class RoomService {
   ) {}
 
   async getRoomTypeOptions(): Promise<RoomTypeOption[]> {
-    const mockRooms = [
-      {
-        value: 'all',
-        label: 'All Categories',
-      },
-      {
-        value: 'xxhLoMHK',
-        label: 'Presidential Suite',
-      },
-      {
-        value: 'KhjnkI6U',
-        label: 'Deluxe Room',
-      },
-      {
-        value: 'G5ragaPd',
-        label: 'Family Room',
-      },
-      {
-        value: 'e8mpTThT',
-        label: 'Standard Room',
-      },
-    ];
+    const roomCategories = await this.roomCategoryRepository.find({
+      order: { orderIndex: 'ASC' },
+    });
 
-    return mockRooms;
+    roomCategories.unshift({
+      id: 'all',
+      name: 'All Categories',
+      orderIndex: 0,
+    });
 
-    // Uncomment when database is ready:
-    // return await this.roomCategoryRepository.find({
-    //   order: { createdAt: 'DESC' },
-    // });
+    return roomCategories.map((category) => ({
+      value: category.id,
+      label: category.name,
+    }));
   }
 }
