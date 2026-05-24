@@ -3,7 +3,6 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { HotelsModule } from './modules/hotels/hotels.module';
 import { RoomModule } from './modules/room/room.module';
 import { BookModule } from './modules/book/book.module';
 import appConfig from './config/app.config';
@@ -22,7 +21,6 @@ import databaseConfig from './config/database.config';
         ...configService.get('database'),
       }),
     }),
-    HotelsModule,
     RoomModule,
     BookModule,
   ],

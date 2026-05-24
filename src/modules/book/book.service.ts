@@ -47,58 +47,53 @@ export class BookService {
   }
 
   async createBooking(data: CreateBookingDto) {
-    return await this.bookingRepository.manager.transaction(
-      async (transactionalEntityManager) => {
-        const custId = nanoid();
-        const customerList = await transactionalEntityManager.find(
-          CustomerTbl,
-          {
-            select: ['id', 'icNumber'],
-            where: { email: data.email },
-          },
+    return await this.bookingRepository.manager.transaction(async (manager) => {
+      const custId = nanoid();
+      const customerList = await manager.find(CustomerTbl, {
+        select: ['id', 'icNumber'],
+        where: { email: data.email },
+      });
+
+      let customerId: string;
+
+      if (customerList.length === 0) {
+        const encryptedIcNumber = await this.cryptoService.encrypt(
+          data.icNumber,
         );
-
-        let customerId: string;
-
-        if (customerList.length === 0) {
-          const encryptedIcNumber = await this.cryptoService.encrypt(
-            data.icNumber,
-          );
-          const newCustomer = transactionalEntityManager.create(CustomerTbl, {
-            id: custId,
-            name: data.name,
-            email: data.email,
-            icNumber: encryptedIcNumber,
-            phone: data.phone,
-          });
-          await transactionalEntityManager.save(newCustomer);
-          customerId = custId;
-        } else {
-          const decryptedIcNumber = await this.cryptoService.decrypt(
-            customerList[0].icNumber,
-          );
-          console.log('Data exists. Decrypted IC Number >>', decryptedIcNumber);
-          customerId = customerList[0].id;
-        }
-
-        const booking = transactionalEntityManager.create(BookingTbl, {
-          id: nanoid(),
-          roomId: data.id,
-          customerId: customerId,
-          addOns: data.addOns,
-          checkInDate: moment(data.checkInDate, 'DD/MM/YYYY').format(
-            'YYYY-MM-DD',
-          ),
-          checkOutDate: moment(data.checkOutDate, 'DD/MM/YYYY').format(
-            'YYYY-MM-DD',
-          ),
-          totalPrice: data.totalPrice,
-          isCancelled: 0,
+        const newCustomer = manager.create(CustomerTbl, {
+          id: custId,
+          name: data.name,
+          email: data.email,
+          icNumber: encryptedIcNumber,
+          phone: data.phone,
         });
-        await transactionalEntityManager.save(booking);
+        await manager.save(newCustomer);
+        customerId = custId;
+      } else {
+        const decryptedIcNumber = await this.cryptoService.decrypt(
+          customerList[0].icNumber,
+        );
+        console.log('Data exists. Decrypted IC Number >>', decryptedIcNumber);
+        customerId = customerList[0].id;
+      }
 
-        return { message: MESSAGES.BOOKING_CREATED };
-      },
-    );
+      const booking = manager.create(BookingTbl, {
+        id: nanoid(),
+        roomId: data.id,
+        customerId: customerId,
+        addOns: data.addOns,
+        checkInDate: moment(data.checkInDate, 'DD/MM/YYYY').format(
+          'YYYY-MM-DD',
+        ),
+        checkOutDate: moment(data.checkOutDate, 'DD/MM/YYYY').format(
+          'YYYY-MM-DD',
+        ),
+        totalPrice: data.totalPrice,
+        isCancelled: 0,
+      });
+      await manager.save(booking);
+
+      return { message: MESSAGES.BOOKING_CREATED };
+    });
   }
 }
