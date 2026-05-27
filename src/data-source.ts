@@ -10,7 +10,8 @@ export default new DataSource({
   username: process.env.DB_USERNAME || 'root',
   password: process.env.DB_PASSWORD || 'password',
   database: process.env.DB_DATABASE || 'finago_hotel',
-  entities: ['src/**/*.entity{.ts,.js}'],
+  entities: ['src/entities/*.{ts,js}'],
   migrations: ['src/migrations/*{.ts,.js}'],
   synchronize: false,
+  migrationsRun: false, // Set to true to auto-run migrations on app start
 });
