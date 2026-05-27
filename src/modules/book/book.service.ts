@@ -5,7 +5,7 @@ import { BookingTbl, CustomerTbl } from '../../entities';
 import { CreateBookingDto } from './dto/create-booking.dto';
 import { CryptoService } from '../../common/utils/crypto.util';
 import { MESSAGES } from '../../common/constants/messages.constant';
-import moment from 'moment';
+const moment = require('moment');
 import { customAlphabet } from 'nanoid';
 
 const alphabet =
