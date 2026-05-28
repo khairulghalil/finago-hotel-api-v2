@@ -32,32 +32,9 @@ jobs:
               "cd /home/ubuntu/finago-hotel-api-v2",
               "echo \"=== Starting deployment ===\"",
               "echo \"Current directory: $(pwd)\"",
+              
               "ls",
               
-              # "git config --global --add safe.directory /home/ubuntu/finago-hotel-api-v2",
-              # "echo \"=== Git safe directory configured ===\"",
-              
-              # "echo \"Current branch: $(git branch --show-current)\"",
-              
-              # "git pull origin main",
-              # "echo \"=== Git pull completed ===\"",
-              
-              # "npm install",
-              # "echo \"=== Dependencies installed ===\"",
-              
-              # "rm -f tsconfig.build.tsbuildinfo",
-              
-              # "npm run build",
-              # "echo \"=== Build completed ===\"",
-              
-              # "npm run migration:run || echo \"No migrations to run\"",
-              # "echo \"=== Migrations completed ===\"",
-              
-              # "pm2 restart finago-hotel-api-v2 || pm2 start dist/main.js --name finago-hotel-api-v2",
-              # "echo \"=== PM2 restarted ===\"",
-              
-              # "pm2 list",
-              # "echo \"=== Deployment completed successfully ===\""
             ]' \
             --output text \
             --query "Command.CommandId")
