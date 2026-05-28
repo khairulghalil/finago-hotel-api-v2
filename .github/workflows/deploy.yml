@@ -1,4 +1,4 @@
-name: Deploy Node.js to EC2
+name: Deploy Node.js to EC2 (SSM)
 
 on:
   push:
@@ -13,24 +13,25 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Set Node.js (for GitHub Actions runtime compatibility)
-        uses: actions/setup-node@v4
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
         with:
-          node-version: 22
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
 
-      - name: Deploy to EC2 via SSH
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ${{ secrets.EC2_USER }}
-          key: ${{ secrets.EC2_KEY }}
-          script: |
-            cd /home/ubuntu/finago-hotel-api-v2
-            git pull origin main
-
-            npm install
-            npm run build
-
-            npm run migration:run
-
-            pm2 restart finago-hotel-api-v2 || pm2 start dist/main.js --name finago-hotel-api-v2
+      - name: Deploy via AWS SSM
+        run: |
+          aws ssm send-command \
+            --instance-ids "i-09cbfd7c90bc575e2" \
+            --document-name "AWS-RunShellScript" \
+            --comment "Deploy Node.js backend" \
+            --parameters commands='[
+              "cd /home/ubuntu/finago-hotel-api-v2",
+              "rm tsconfig.build.tsbuildinfo",
+              "git pull origin main",
+              "npm install",
+              "npm run build",
+              "npm run migration:run",
+              "pm2 restart finago-hotel-api-v2 || pm2 start dist/main.js --name finago-hotel-api-v2"
+            ]'
