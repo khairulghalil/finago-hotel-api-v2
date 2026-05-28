@@ -36,17 +36,9 @@ jobs:
 
                 rm tsconfig.build.tsbuildinfo &&
 
-                git pull origin main &&
+                pm2 list
 
-                npm install &&
-
-                npm run build &&
-
-                npm run migration:run &&
-
-                pm2 list &&
-
-                pm2 restart finago-hotel-api-v2
+                
 
               '\''"
             ]' \
