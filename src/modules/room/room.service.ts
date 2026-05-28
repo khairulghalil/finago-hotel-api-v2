@@ -41,7 +41,6 @@ export class RoomService {
     return roomCategories.map((category) => ({
       value: category.id,
       label: category.name,
-      orderIndex: 0,
     }));
   }
 

@@ -46,8 +46,6 @@ jobs:
 
                 pm2 restart finago-hotel-api-v2
 
-                
-
               '\''"
             ]' \
             --output text \
