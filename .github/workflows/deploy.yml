@@ -34,7 +34,19 @@ jobs:
 
                 cd /home/ubuntu/finago-hotel-api-v2 &&
 
-                git branch
+                rm tsconfig.build.tsbuildinfo &&
+
+                git pull origin main &&
+
+                npm install &&
+
+                npm run build &&
+
+                npm run migration:run &&
+
+                pm2 list &&
+
+                pm2 restart finago-hotel-api-v2
 
               '\''"
             ]' \
