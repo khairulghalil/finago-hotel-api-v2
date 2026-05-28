@@ -28,15 +28,20 @@ jobs:
             --document-name "AWS-RunShellScript" \
             --comment "Deploy Node.js backend" \
             --parameters commands='[
+              "#!/bin/bash",
               "set -e",
+              "set -x",
+              "whoami",
               "cd /home/ubuntu/finago-hotel-api-v2",
               "echo \"=== Starting deployment ===\"",
               "echo \"Current directory: $(pwd)\"",
+              "echo \"Directory owner: $(ls -ld . | awk '\''{print $3}'\'' )\"",
               
               "git config --global --add safe.directory /home/ubuntu/finago-hotel-api-v2",
               "echo \"=== Git safe directory configured ===\"",
               
-              "echo \"Current branch: $(git branch --show-current)\"",
+              "git branch --show-current || echo \"Not on a branch\"",
+              "git status || echo \"Git status failed\"",
               
               "git pull origin main",
               "echo \"=== Git pull completed ===\"",
@@ -44,7 +49,7 @@ jobs:
               "npm install",
               "echo \"=== Dependencies installed ===\"",
               
-              "rm -f tsconfig.build.tsbuildinfo",
+              "rm -f tsconfig.build.tsbuildinfo || true",
               
               "npm run build",
               "echo \"=== Build completed ===\"",
@@ -65,11 +70,17 @@ jobs:
           echo "Waiting for command to complete..."
 
           # Wait for command to complete (timeout after 5 minutes)
+          set +e
           aws ssm wait command-executed \
             --command-id "$COMMAND_ID" \
             --instance-id "i-09cbfd7c90bc575e2" \
-            --no-cli-pager \
-            || true
+            --no-cli-pager
+          WAIT_EXIT_CODE=$?
+          set -e
+
+          if [ $WAIT_EXIT_CODE -ne 0 ]; then
+            echo "⚠️  Command wait returned exit code: $WAIT_EXIT_CODE"
+          fi
 
           # Get command status
           STATUS=$(aws ssm get-command-invocation \
@@ -80,25 +91,32 @@ jobs:
 
           echo "Command Status: $STATUS"
 
-          # Get command output
+          # Always get and display outputs
+          echo ""
           echo "=== Command Output ==="
           aws ssm get-command-invocation \
             --command-id "$COMMAND_ID" \
             --instance-id "i-09cbfd7c90bc575e2" \
             --query "StandardOutputContent" \
-            --output text
+            --output text || echo "No standard output"
 
           # Get error output if any
-          ERROR_OUTPUT=$(aws ssm get-command-invocation \
+          echo ""
+          echo "=== Error Output ==="
+          aws ssm get-command-invocation \
             --command-id "$COMMAND_ID" \
             --instance-id "i-09cbfd7c90bc575e2" \
             --query "StandardErrorContent" \
-            --output text)
+            --output text || echo "No error output"
 
-          if [ -n "$ERROR_OUTPUT" ] && [ "$ERROR_OUTPUT" != "None" ]; then
-            echo "=== Error Output ==="
-            echo "$ERROR_OUTPUT"
-          fi
+          # Get response code
+          echo ""
+          echo "=== Response Code ==="
+          aws ssm get-command-invocation \
+            --command-id "$COMMAND_ID" \
+            --instance-id "i-09cbfd7c90bc575e2" \
+            --query "ResponseCode" \
+            --output text || echo "No response code"
 
           # Fail the workflow if command failed
           if [ "$STATUS" != "Success" ]; then
