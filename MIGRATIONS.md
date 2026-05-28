@@ -49,6 +49,7 @@ npm run migration:generate src/migrations/AddFloorToRoom
 ```
 
 This will create a file like `src/migrations/1234567890-AddFloorToRoom.ts` with:
+
 - `up()` method: SQL to apply changes
 - `down()` method: SQL to revert changes
 
@@ -57,16 +58,16 @@ This will create a file like `src/migrations/1234567890-AddFloorToRoom.ts` with:
 Always review the generated migration file to ensure it does what you expect:
 
 ```typescript
-import { MigrationInterface, QueryRunner } from "typeorm";
+import { MigrationInterface, QueryRunner } from 'typeorm';
 
 export class AddFloorToRoom1234567890 implements MigrationInterface {
-    public async up(queryRunner: QueryRunner): Promise<void> {
-        await queryRunner.query(`ALTER TABLE roomTbl ADD floor varchar(10) NULL`);
-    }
+  public async up(queryRunner: QueryRunner): Promise<void> {
+    await queryRunner.query(`ALTER TABLE roomTbl ADD floor varchar(10) NULL`);
+  }
 
-    public async down(queryRunner: QueryRunner): Promise<void> {
-        await queryRunner.query(`ALTER TABLE roomTbl DROP COLUMN floor`);
-    }
+  public async down(queryRunner: QueryRunner): Promise<void> {
+    await queryRunner.query(`ALTER TABLE roomTbl DROP COLUMN floor`);
+  }
 }
 ```
 
@@ -130,32 +131,33 @@ npm run migration:create src/migrations/CustomDataMigration
 Then edit the file manually:
 
 ```typescript
-import { MigrationInterface, QueryRunner } from "typeorm";
+import { MigrationInterface, QueryRunner } from 'typeorm';
 
 export class CustomDataMigration1234567890 implements MigrationInterface {
-    public async up(queryRunner: QueryRunner): Promise<void> {
-        // Your custom SQL or TypeORM queries
-        await queryRunner.query(`
+  public async up(queryRunner: QueryRunner): Promise<void> {
+    // Your custom SQL or TypeORM queries
+    await queryRunner.query(`
             UPDATE roomTbl 
             SET floor = '1' 
             WHERE roomNumber LIKE '1%'
         `);
-    }
+  }
 
-    public async down(queryRunner: QueryRunner): Promise<void> {
-        // Revert the changes
-        await queryRunner.query(`
+  public async down(queryRunner: QueryRunner): Promise<void> {
+    // Revert the changes
+    await queryRunner.query(`
             UPDATE roomTbl 
             SET floor = NULL 
             WHERE floor = '1'
         `);
-    }
+  }
 }
 ```
 
 ## Best Practices
 
 ### 1. Always Test Migrations Locally First
+
 ```bash
 # Test up
 npm run migration:run
@@ -168,19 +170,24 @@ npm run migration:run
 ```
 
 ### 2. Never Edit Migrations That Have Been Run
+
 Once a migration has been executed in any environment, create a new migration to make changes.
 
 ### 3. Keep Migrations Small
+
 One migration per logical change makes it easier to debug and rollback.
 
 ### 4. Backup Before Running in Production
+
 ```bash
 # MySQL backup example
 mysqldump -u username -p finago_hotel > backup_$(date +%Y%m%d_%H%M%S).sql
 ```
 
 ### 5. Check Migration Status
+
 Before deploying, check what migrations will run:
+
 ```bash
 npm run migration:show
 ```
@@ -202,6 +209,7 @@ pm2 restart finago-hotel-api
 Let's say you want to add a `maxGuests` field to rooms:
 
 1. **Update entity**:
+
 ```typescript
 // src/entities/room.ts
 @Column("int", { name: "maxGuests", default: 2 })
@@ -209,11 +217,13 @@ maxGuests!: number;
 ```
 
 2. **Generate migration**:
+
 ```bash
 npm run migration:generate src/migrations/AddMaxGuestsToRoom
 ```
 
 3. **Review the generated file**:
+
 ```typescript
 // src/migrations/1234567890-AddMaxGuestsToRoom.ts
 public async up(queryRunner: QueryRunner): Promise<void> {
@@ -222,6 +232,7 @@ public async up(queryRunner: QueryRunner): Promise<void> {
 ```
 
 4. **Test locally**:
+
 ```bash
 npm run migration:run
 # Test your app
@@ -229,6 +240,7 @@ npm run migration:revert  # if needed
 ```
 
 5. **Commit to Git**:
+
 ```bash
 git add src/entities/room.ts src/migrations/
 git commit -m "Add maxGuests field to Room"
@@ -236,6 +248,7 @@ git push
 ```
 
 6. **Deploy to EC2**:
+
 ```bash
 ssh your-ec2
 cd /path/to/app
@@ -248,19 +261,24 @@ pm2 restart finago-hotel-api
 ## Troubleshooting
 
 ### Migration Already Exists Error
+
 If you get "QueryFailedError: Table already exists":
+
 - Your database might already have the changes
 - Check migration status: `npm run migration:show`
 - Manually mark migration as run or drop the table and re-run
 
 ### Migration Fails
+
 - Check the error message carefully
 - Review the generated SQL
 - Test on a copy of production database first
 - Always have a backup before running migrations in production
 
 ### Multiple Instances Running
+
 If you have multiple EC2 instances:
+
 - Run migrations from only ONE instance
 - Use a deployment tool/script to ensure only one instance runs migrations
 - Or run migrations manually before deployment
