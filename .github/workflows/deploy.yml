@@ -34,6 +34,8 @@ jobs:
               "echo \"Current directory: $(pwd)\"",
               
               "ls",
+
+              "git config --global --add safe.directory /home/ubuntu/finago-hotel-api-v2",
               
             ]' \
             --output text \
