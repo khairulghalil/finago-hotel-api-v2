@@ -32,10 +32,8 @@ jobs:
               "cd /home/ubuntu/finago-hotel-api-v2",
               "echo \"=== Starting deployment ===\"",
               "echo \"Current directory: $(pwd)\"",
-              
-              "ls",
+              "sudo -u ubuntu git config --global --add safe.directory /home/ubuntu/finago-hotel-api-v2",
 
-              "git config --global --add safe.directory $(pwd)",
               "git rev-parse HEAD",
               
             ]' \
