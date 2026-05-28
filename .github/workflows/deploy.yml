@@ -22,17 +22,88 @@ jobs:
 
       - name: Deploy via AWS SSM
         run: |
-          aws ssm send-command \
+          # Send the command and capture the command ID
+          COMMAND_ID=$(aws ssm send-command \
             --instance-ids "i-09cbfd7c90bc575e2" \
             --document-name "AWS-RunShellScript" \
             --comment "Deploy Node.js backend" \
             --parameters commands='[
+              "set -e",
               "cd /home/ubuntu/finago-hotel-api-v2",
+              "echo \"=== Starting deployment ===\"",
               "echo \"Current directory: $(pwd)\"",
-              "rm tsconfig.build.tsbuildinfo",
+              
+              "git config --global --add safe.directory /home/ubuntu/finago-hotel-api-v2",
+              "echo \"=== Git safe directory configured ===\"",
+              
+              "echo \"Current branch: $(git branch --show-current)\"",
+              
               "git pull origin main",
+              "echo \"=== Git pull completed ===\"",
+              
               "npm install",
+              "echo \"=== Dependencies installed ===\"",
+              
+              "rm -f tsconfig.build.tsbuildinfo",
+              
               "npm run build",
-              "npm run migration:run",
-              "pm2 restart finago-hotel-api-v2 || pm2 start dist/main.js --name finago-hotel-api-v2"
-            ]'
+              "echo \"=== Build completed ===\"",
+              
+              "npm run migration:run || echo \"No migrations to run\"",
+              "echo \"=== Migrations completed ===\"",
+              
+              "pm2 restart finago-hotel-api-v2 || pm2 start dist/main.js --name finago-hotel-api-v2",
+              "echo \"=== PM2 restarted ===\"",
+              
+              "pm2 list",
+              "echo \"=== Deployment completed successfully ===\""
+            ]' \
+            --output text \
+            --query "Command.CommandId")
+
+          echo "Command ID: $COMMAND_ID"
+          echo "Waiting for command to complete..."
+
+          # Wait for command to complete (timeout after 5 minutes)
+          aws ssm wait command-executed \
+            --command-id "$COMMAND_ID" \
+            --instance-id "i-09cbfd7c90bc575e2" \
+            --no-cli-pager \
+            || true
+
+          # Get command status
+          STATUS=$(aws ssm get-command-invocation \
+            --command-id "$COMMAND_ID" \
+            --instance-id "i-09cbfd7c90bc575e2" \
+            --query "Status" \
+            --output text)
+
+          echo "Command Status: $STATUS"
+
+          # Get command output
+          echo "=== Command Output ==="
+          aws ssm get-command-invocation \
+            --command-id "$COMMAND_ID" \
+            --instance-id "i-09cbfd7c90bc575e2" \
+            --query "StandardOutputContent" \
+            --output text
+
+          # Get error output if any
+          ERROR_OUTPUT=$(aws ssm get-command-invocation \
+            --command-id "$COMMAND_ID" \
+            --instance-id "i-09cbfd7c90bc575e2" \
+            --query "StandardErrorContent" \
+            --output text)
+
+          if [ -n "$ERROR_OUTPUT" ] && [ "$ERROR_OUTPUT" != "None" ]; then
+            echo "=== Error Output ==="
+            echo "$ERROR_OUTPUT"
+          fi
+
+          # Fail the workflow if command failed
+          if [ "$STATUS" != "Success" ]; then
+            echo "Deployment failed with status: $STATUS"
+            exit 1
+          fi
+
+          echo "Deployment completed successfully!"
