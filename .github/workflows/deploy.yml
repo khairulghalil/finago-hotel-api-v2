@@ -28,14 +28,15 @@ jobs:
             --document-name "AWS-RunShellScript" \
             --comment "Deploy Node.js backend" \
             --parameters commands='[
-              "set -e",
-              "git config --global --add safe.directory \"*\"",
-              "cd /home/ubuntu/finago-hotel-api-v2",
-              "echo \"=== Starting deployment ===\"",
-              "echo \"Current directory: $(pwd)\"",
+              "sudo -u ubuntu bash -lc '\''
 
-              "git rev-parse HEAD",
-              
+                export HOME=/home/ubuntu &&
+
+                cd /home/ubuntu/finago-hotel-api-v2 &&
+
+                git branch
+
+              '\''"
             ]' \
             --output text \
             --query "Command.CommandId")
