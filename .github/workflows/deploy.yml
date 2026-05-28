@@ -34,7 +34,7 @@ jobs:
 
                 cd /home/ubuntu/finago-hotel-api-v2 &&
 
-                rm tsconfig.build.tsbuildinfo &&
+                ls &&
 
                 pm2 list
 
