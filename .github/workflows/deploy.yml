@@ -35,7 +35,7 @@ jobs:
               
               "ls",
 
-              "git config --global --add safe.directory /home/ubuntu/finago-hotel-api-v2",
+              "git rev-parse HEAD",
               
             ]' \
             --output text \
